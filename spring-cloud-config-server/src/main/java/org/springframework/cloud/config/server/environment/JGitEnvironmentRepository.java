@@ -269,8 +269,7 @@ public class JGitEnvironmentRepository extends AbstractScmEnvironmentRepository
 			if (shouldPull(git)) {
 				FetchResult fetchStatus = fetch(git, label);
 				if (this.deleteUntrackedBranches && fetchStatus != null) {
-					deleteUntrackedLocalBranches(fetchStatus.getTrackingRefUpdates(),
-							git);
+					deleteUntrackedLocalBranches(fetchStatus.getTrackingRefUpdates(), git);
 				}
 				// checkout after fetch so we can get any new branches, tags, ect.
 				checkout(git, label);
@@ -531,7 +530,15 @@ public class JGitEnvironmentRepository extends AbstractScmEnvironmentRepository
 		}
 	}
 
+	/**
+	 * 每次config-server重启就会重新在本地创建新的临时目录，第一次请求会将远程git仓库的配置文件拉取到本地，第二次请求就会
+	 * 直接拉取本地仓库中的配置文件
+	 *
+	 * 服务不重启的情况下，除了第一次请求，以后的请求都是直接拉取本地的配置文件，所以远程配置文件更改了以后，要想使其生效，则要嘛
+	 * 调用refresh接口，要嘛重启服务
+	 */
 	private Git createGitClient() throws IOException, GitAPIException {
+		logger.info("JGitEnvironmentRepository#createGitClient获取到本地临时目录:"+getWorkingDirectory());
 		File lock = new File(getWorkingDirectory(), ".git/index.lock");
 		if (lock.exists()) {
 			// The only way this can happen is if another JVM (e.g. one that
@@ -582,8 +589,7 @@ public class JGitEnvironmentRepository extends AbstractScmEnvironmentRepository
 	}
 
 	private Git cloneToBasedir() throws GitAPIException {
-		CloneCommand clone = this.gitFactory.getCloneCommandByCloneRepository()
-				.setURI(getUri()).setDirectory(getBasedir());
+		CloneCommand clone = this.gitFactory.getCloneCommandByCloneRepository().setURI(getUri()).setDirectory(getBasedir());
 		configureCommand(clone);
 		try {
 			return clone.call();

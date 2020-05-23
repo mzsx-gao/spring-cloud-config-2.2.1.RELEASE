@@ -43,16 +43,14 @@ import org.springframework.context.event.SmartApplicationListener;
  *
  * @author Dave Syer
  */
-@ConditionalOnProperty(value = "spring.cloud.config.discovery.enabled",
-		matchIfMissing = false)
+@ConditionalOnProperty(value = "spring.cloud.config.discovery.enabled",matchIfMissing = false)
 @Configuration(proxyBeanMethods = false)
 @Import({ UtilAutoConfiguration.class })
 @EnableDiscoveryClient
 public class DiscoveryClientConfigServiceBootstrapConfiguration
-		implements SmartApplicationListener {
+	implements SmartApplicationListener {
 
-	private static Log logger = LogFactory
-			.getLog(DiscoveryClientConfigServiceBootstrapConfiguration.class);
+	private static Log logger = LogFactory.getLog(DiscoveryClientConfigServiceBootstrapConfiguration.class);
 
 	@Autowired
 	private ConfigClientProperties config;
@@ -63,15 +61,13 @@ public class DiscoveryClientConfigServiceBootstrapConfiguration
 	private HeartbeatMonitor monitor = new HeartbeatMonitor();
 
 	@Bean
-	public ConfigServerInstanceProvider configServerInstanceProvider(
-			DiscoveryClient discoveryClient) {
+	public ConfigServerInstanceProvider configServerInstanceProvider(DiscoveryClient discoveryClient) {
 		return new ConfigServerInstanceProvider(discoveryClient);
 	}
 
 	@Override
 	public boolean supportsEventType(Class<? extends ApplicationEvent> eventType) {
-		return ContextRefreshedEvent.class.isAssignableFrom(eventType)
-				|| HeartbeatEvent.class.isAssignableFrom(eventType);
+		return ContextRefreshedEvent.class.isAssignableFrom(eventType)|| HeartbeatEvent.class.isAssignableFrom(eventType);
 	}
 
 	@Override
@@ -94,12 +90,12 @@ public class DiscoveryClientConfigServiceBootstrapConfiguration
 		}
 	}
 
+	//这个方法主要是通过"spring.cloud.config.discovery.service-id"找到服务端对应的服务地址，设置给ConfigClientProperties的uri属性
 	private void refresh() {
 		try {
 			String serviceId = this.config.getDiscovery().getServiceId();
 			List<String> listOfUrls = new ArrayList<>();
-			List<ServiceInstance> serviceInstances = this.instanceProvider
-					.getConfigServerInstances(serviceId);
+			List<ServiceInstance> serviceInstances = this.instanceProvider.getConfigServerInstances(serviceId);
 
 			for (int i = 0; i < serviceInstances.size(); i++) {
 

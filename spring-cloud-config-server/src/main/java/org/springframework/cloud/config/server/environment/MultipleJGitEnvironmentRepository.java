@@ -159,8 +159,7 @@ public class MultipleJGitEnvironmentRepository extends JGitEnvironmentRepository
 						if (label == null) {
 							label = candidate.getDefaultLabel();
 						}
-						Environment source = candidate.findOne(application, profile,
-								label, includeOrigin);
+						Environment source = candidate.findOne(application, profile, label, includeOrigin);
 						if (source != null) {
 							return source;
 						}
@@ -178,8 +177,7 @@ public class MultipleJGitEnvironmentRepository extends JGitEnvironmentRepository
 				}
 			}
 		}
-		JGitEnvironmentRepository candidate = getRepository(this, application, profile,
-				label);
+		JGitEnvironmentRepository candidate = getRepository(this, application, profile, label);
 		if (label == null) {
 			label = candidate.getDefaultLabel();
 		}

@@ -129,8 +129,7 @@ public class EnvironmentController {
 		return getEnvironment(name, profiles, label, true);
 	}
 
-	public Environment getEnvironment(String name, String profiles, String label,
-			boolean includeOrigin) {
+	public Environment getEnvironment(String name, String profiles, String label, boolean includeOrigin) {
 		if (name != null && name.contains("(_)")) {
 			// "(_)" is uncommon in a git repo name, but "/" cannot be matched
 			// by Spring MVC
@@ -141,10 +140,8 @@ public class EnvironmentController {
 			// by Spring MVC
 			label = label.replace("(_)", "/");
 		}
-		Environment environment = this.repository.findOne(name, profiles, label,
-				includeOrigin);
-		if (!this.acceptEmpty
-				&& (environment == null || environment.getPropertySources().isEmpty())) {
+		Environment environment = this.repository.findOne(name, profiles, label, includeOrigin);
+		if (!this.acceptEmpty && (environment == null || environment.getPropertySources().isEmpty())) {
 			throw new EnvironmentNotFoundException("Profile Not found");
 		}
 		return environment;
@@ -158,6 +155,7 @@ public class EnvironmentController {
 		return labelledProperties(name, profiles, null, resolvePlaceholders);
 	}
 
+	//最常用的访问方式
 	@RequestMapping("/{label}/{name}-{profiles}.properties")
 	public ResponseEntity<String> labelledProperties(@PathVariable String name,
 			@PathVariable String profiles, @PathVariable String label,
@@ -168,8 +166,7 @@ public class EnvironmentController {
 		Map<String, Object> properties = convertToProperties(environment);
 		String propertiesString = getPropertiesString(properties);
 		if (resolvePlaceholders) {
-			propertiesString = resolvePlaceholders(prepareEnvironment(environment),
-					propertiesString);
+			propertiesString = resolvePlaceholders(prepareEnvironment(environment), propertiesString);
 		}
 		return getSuccess(propertiesString);
 	}
@@ -296,8 +293,7 @@ public class EnvironmentController {
 	}
 
 	private ResponseEntity<String> getSuccess(String body) {
-		return new ResponseEntity<>(body, getHttpHeaders(MediaType.TEXT_PLAIN),
-				HttpStatus.OK);
+		return new ResponseEntity<>(body, getHttpHeaders(MediaType.TEXT_PLAIN), HttpStatus.OK);
 	}
 
 	private ResponseEntity<String> getSuccess(String body, MediaType mediaType) {

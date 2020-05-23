@@ -45,6 +45,7 @@
 		<module>spring-cloud-starter-config</module>
 		<module>docs</module>
 		<module>my-configserver</module>
+		<module>my-configclient</module>
 	</modules>
 	<dependencyManagement>
 		<dependencies>

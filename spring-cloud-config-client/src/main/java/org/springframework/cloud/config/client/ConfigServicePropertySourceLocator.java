@@ -85,48 +85,38 @@ public class ConfigServicePropertySourceLocator implements PropertySourceLocator
 
 	@Override
 	@Retryable(interceptor = "configServerRetryInterceptor")
-	public org.springframework.core.env.PropertySource<?> locate(
-			org.springframework.core.env.Environment environment) {
+	public org.springframework.core.env.PropertySource<?> locate(org.springframework.core.env.Environment environment) {
 		ConfigClientProperties properties = this.defaultProperties.override(environment);
-		CompositePropertySource composite = new OriginTrackedCompositePropertySource(
-				"configService");
-		RestTemplate restTemplate = this.restTemplate == null
-				? getSecureRestTemplate(properties) : this.restTemplate;
+		CompositePropertySource composite = new OriginTrackedCompositePropertySource("configService");
+		RestTemplate restTemplate = this.restTemplate == null? getSecureRestTemplate(properties) : this.restTemplate;
 		Exception error = null;
 		String errorBody = null;
 		try {
 			String[] labels = new String[] { "" };
 			if (StringUtils.hasText(properties.getLabel())) {
-				labels = StringUtils
-						.commaDelimitedListToStringArray(properties.getLabel());
+				labels = StringUtils.commaDelimitedListToStringArray(properties.getLabel());
 			}
 			String state = ConfigClientStateHolder.getState();
 			// Try all the labels until one works
 			for (String label : labels) {
-				Environment result = getRemoteEnvironment(restTemplate, properties,
-						label.trim(), state);
+				//请求config-server拉取配置信息
+				Environment result = getRemoteEnvironment(restTemplate, properties,label.trim(), state);
 				if (result != null) {
 					log(result);
 
 					// result.getPropertySources() can be null if using xml
 					if (result.getPropertySources() != null) {
 						for (PropertySource source : result.getPropertySources()) {
-							@SuppressWarnings("unchecked")
-							Map<String, Object> map = translateOrigins(source.getName(),
-									(Map<String, Object>) source.getSource());
-							composite.addPropertySource(
-									new OriginTrackedMapPropertySource(source.getName(),
-											map));
+							Map<String, Object> map = translateOrigins(source.getName(),(Map<String, Object>) source.getSource());
+							composite.addPropertySource(new OriginTrackedMapPropertySource(source.getName(),map));
 						}
 					}
 
-					if (StringUtils.hasText(result.getState())
-							|| StringUtils.hasText(result.getVersion())) {
+					if (StringUtils.hasText(result.getState())|| StringUtils.hasText(result.getVersion())) {
 						HashMap<String, Object> map = new HashMap<>();
 						putValue(map, "config.client.state", result.getState());
 						putValue(map, "config.client.version", result.getVersion());
-						composite.addFirstPropertySource(
-								new MapPropertySource("configClient", map));
+						composite.addFirstPropertySource(new MapPropertySource("configClient", map));
 					}
 					return composite;
 				}
@@ -135,8 +125,7 @@ public class ConfigServicePropertySourceLocator implements PropertySourceLocator
 		}
 		catch (HttpServerErrorException e) {
 			error = e;
-			if (MediaType.APPLICATION_JSON
-					.includes(e.getResponseHeaders().getContentType())) {
+			if (MediaType.APPLICATION_JSON.includes(e.getResponseHeaders().getContentType())) {
 				errorBody = e.getResponseBodyAsString();
 			}
 		}
@@ -152,7 +141,6 @@ public class ConfigServicePropertySourceLocator implements PropertySourceLocator
 		logger.warn("Could not locate PropertySource: "
 				+ (error != null ? error.getMessage() : errorBody));
 		return null;
-
 	}
 
 	@Override
@@ -219,6 +207,7 @@ public class ConfigServicePropertySourceLocator implements PropertySourceLocator
 		}
 	}
 
+	//拉取服务端配置信息，封装为Environment对象
 	private Environment getRemoteEnvironment(RestTemplate restTemplate,
 			ConfigClientProperties properties, String label, String state) {
 		String path = "/{name}/{profile}";
@@ -246,12 +235,11 @@ public class ConfigServicePropertySourceLocator implements PropertySourceLocator
 			String username = credentials.getUsername();
 			String password = credentials.getPassword();
 
-			logger.info("Fetching config from server at : " + uri);
+			logger.info("加载配置信息-》Fetching config from server at : " + uri);
 
 			try {
 				HttpHeaders headers = new HttpHeaders();
-				headers.setAccept(
-						Collections.singletonList(MediaType.parseMediaType(V2_JSON)));
+				headers.setAccept(Collections.singletonList(MediaType.parseMediaType(V2_JSON)));
 				addAuthorizationToken(properties, headers, username, password);
 				if (StringUtils.hasText(token)) {
 					headers.add(TOKEN_HEADER, token);
@@ -261,8 +249,7 @@ public class ConfigServicePropertySourceLocator implements PropertySourceLocator
 				}
 
 				final HttpEntity<Void> entity = new HttpEntity<>((Void) null, headers);
-				response = restTemplate.exchange(uri + path, HttpMethod.GET, entity,
-						Environment.class, args);
+				response = restTemplate.exchange(uri + path, HttpMethod.GET, entity,Environment.class, args);
 			}
 			catch (HttpClientErrorException e) {
 				if (e.getStatusCode() != HttpStatus.NOT_FOUND) {
@@ -270,8 +257,7 @@ public class ConfigServicePropertySourceLocator implements PropertySourceLocator
 				}
 			}
 			catch (ResourceAccessException e) {
-				logger.info("Connect Timeout Exception on Url - " + uri
-						+ ". Will be trying the next url if available");
+				logger.info("Connect Timeout Exception on Url - " + uri + ". Will be trying the next url if available");
 				if (i == noOfUrls - 1) {
 					throw e;
 				}

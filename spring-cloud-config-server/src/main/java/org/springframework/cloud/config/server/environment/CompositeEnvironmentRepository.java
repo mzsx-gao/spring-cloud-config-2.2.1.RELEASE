@@ -52,19 +52,17 @@ public class CompositeEnvironmentRepository implements EnvironmentRepository {
 	@Override
 	public Environment findOne(String application, String profile, String label,
 			boolean includeOrigin) {
-		Environment env = new Environment(application, new String[] { profile }, label,
-				null, null);
+		Environment env = new Environment(application, new String[] { profile }, label, null, null);
 		if (this.environmentRepositories.size() == 1) {
-			Environment envRepo = this.environmentRepositories.get(0).findOne(application,
-					profile, label, includeOrigin);
+			//加载配置文件信息
+			Environment envRepo = this.environmentRepositories.get(0).findOne(application, profile, label, includeOrigin);
 			env.addAll(envRepo.getPropertySources());
 			env.setVersion(envRepo.getVersion());
 			env.setState(envRepo.getState());
 		}
 		else {
 			for (EnvironmentRepository repo : environmentRepositories) {
-				env.addAll(repo.findOne(application, profile, label, includeOrigin)
-						.getPropertySources());
+				env.addAll(repo.findOne(application, profile, label, includeOrigin).getPropertySources());
 			}
 		}
 		return env;

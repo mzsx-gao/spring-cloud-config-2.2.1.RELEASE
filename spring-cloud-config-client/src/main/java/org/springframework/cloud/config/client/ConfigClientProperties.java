@@ -321,20 +321,16 @@ public class ConfigClientProperties {
 		return credentials;
 	}
 
-	public ConfigClientProperties override(
-			org.springframework.core.env.Environment environment) {
+	public ConfigClientProperties override(org.springframework.core.env.Environment environment) {
 		ConfigClientProperties override = new ConfigClientProperties();
 		BeanUtils.copyProperties(this, override);
-		override.setName(
-				environment.resolvePlaceholders("${" + ConfigClientProperties.PREFIX
+		override.setName(environment.resolvePlaceholders("${" + ConfigClientProperties.PREFIX
 						+ ".name:${spring.application.name:application}}"));
 		if (environment.containsProperty(ConfigClientProperties.PREFIX + ".profile")) {
-			override.setProfile(
-					environment.getProperty(ConfigClientProperties.PREFIX + ".profile"));
+			override.setProfile(environment.getProperty(ConfigClientProperties.PREFIX + ".profile"));
 		}
 		if (environment.containsProperty(ConfigClientProperties.PREFIX + ".label")) {
-			override.setLabel(
-					environment.getProperty(ConfigClientProperties.PREFIX + ".label"));
+			override.setLabel(environment.getProperty(ConfigClientProperties.PREFIX + ".label"));
 		}
 		return override;
 	}

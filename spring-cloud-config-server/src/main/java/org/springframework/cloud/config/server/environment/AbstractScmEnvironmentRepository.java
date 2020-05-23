@@ -49,18 +49,20 @@ public abstract class AbstractScmEnvironmentRepository extends AbstractScmAccess
 		return findOne(application, profile, label, false);
 	}
 
+	//获取配置
 	@Override
 	public synchronized Environment findOne(String application, String profile,
 			String label, boolean includeOrigin) {
 		NativeEnvironmentRepository delegate = new NativeEnvironmentRepository(
 				getEnvironment(), new NativeEnvironmentProperties());
+		//获取配置文件的路径
 		Locations locations = getLocations(application, profile, label);
 		delegate.setSearchLocations(locations.getLocations());
+		//从本地路径中加载所有配置文件属性
 		Environment result = delegate.findOne(application, profile, "", includeOrigin);
 		result.setVersion(locations.getVersion());
 		result.setLabel(label);
-		return this.cleaner.clean(result, getWorkingDirectory().toURI().toString(),
-				getUri());
+		return this.cleaner.clean(result, getWorkingDirectory().toURI().toString(), getUri());
 	}
 
 	@Override

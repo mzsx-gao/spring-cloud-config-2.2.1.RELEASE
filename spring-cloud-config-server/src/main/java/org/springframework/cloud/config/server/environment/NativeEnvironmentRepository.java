@@ -130,10 +130,8 @@ public class NativeEnvironmentRepository
 	}
 
 	@Override
-	public Environment findOne(String config, String profile, String label,
-			boolean includeOrigin) {
-		SpringApplicationBuilder builder = new SpringApplicationBuilder(
-				PropertyPlaceholderAutoConfiguration.class);
+	public Environment findOne(String config, String profile, String label, boolean includeOrigin) {
+		SpringApplicationBuilder builder = new SpringApplicationBuilder(PropertyPlaceholderAutoConfiguration.class);
 		ConfigurableEnvironment environment = getEnvironment(profile);
 		builder.environment(environment);
 		builder.web(WebApplicationType.NONE).bannerMode(Mode.OFF);
@@ -144,20 +142,17 @@ public class NativeEnvironmentRepository
 		String[] args = getArgs(config, profile, label);
 		// Explicitly set the listeners (to exclude logging listener which would change
 		// log levels in the caller)
-		builder.application()
-				.setListeners(Arrays.asList(new ConfigFileApplicationListener()));
+		//ConfigFileApplicationListener就是用来处理解析对应路径（getArgs方法拿到）下的配置文件到Environment中
+		builder.application().setListeners(Arrays.asList(new ConfigFileApplicationListener()));
 
 		try (ConfigurableApplicationContext context = builder.run(args)) {
 			environment.getPropertySources().remove("profiles");
-			return clean(new PassthruEnvironmentRepository(environment).findOne(config,
-					profile, label, includeOrigin));
+			return clean(new PassthruEnvironmentRepository(environment).findOne(config, profile, label, includeOrigin));
 		}
 		catch (Exception e) {
-			String msg = String.format(
-					"Could not construct context for config=%s profile=%s label=%s includeOrigin=%b",
-					config, profile, label, includeOrigin);
-			String completeMessage = NestedExceptionUtils.buildMessage(msg,
-					NestedExceptionUtils.getMostSpecificCause(e));
+			String msg = String.format("Could not construct context for config=%s profile=%s label=%s includeOrigin=%b",
+				config, profile, label, includeOrigin);
+			String completeMessage = NestedExceptionUtils.buildMessage(msg, NestedExceptionUtils.getMostSpecificCause(e));
 			throw new FailedToConstructEnvironmentException(completeMessage, e);
 		}
 	}

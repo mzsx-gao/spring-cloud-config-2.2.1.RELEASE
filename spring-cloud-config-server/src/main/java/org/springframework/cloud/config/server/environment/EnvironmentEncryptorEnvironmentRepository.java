@@ -58,14 +58,12 @@ public class EnvironmentEncryptorEnvironmentRepository implements EnvironmentRep
 	@Override
 	public Environment findOne(String name, String profiles, String label,
 			boolean includeOrigin) {
-		Environment environment = this.delegate.findOne(name, profiles, label,
-				includeOrigin);
+		Environment environment = this.delegate.findOne(name, profiles, label, includeOrigin);
 		if (this.environmentEncryptor != null) {
 			environment = this.environmentEncryptor.decrypt(environment);
 		}
 		if (!this.overrides.isEmpty()) {
-			environment.addFirst(
-					new PropertySource("overrides", getOverridesMap(includeOrigin)));
+			environment.addFirst(new PropertySource("overrides", getOverridesMap(includeOrigin)));
 		}
 		return environment;
 	}
@@ -76,8 +74,7 @@ public class EnvironmentEncryptorEnvironmentRepository implements EnvironmentRep
 		}
 		Map<Object, Object> map = new LinkedHashMap<>();
 		for (Map.Entry entry : this.overrides.entrySet()) {
-			map.put(entry.getKey(), new PropertyValueDescriptor(entry.getValue(),
-					"Config server overrides"));
+			map.put(entry.getKey(), new PropertyValueDescriptor(entry.getValue(), "Config server overrides"));
 		}
 		return map;
 	}
